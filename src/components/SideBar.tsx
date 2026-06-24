@@ -1,16 +1,57 @@
+import { HandPlatter, LayoutDashboard, LogOut, NotebookText, Settings } from 'lucide-react';
 import logoSidebar from '../assets/logo_sidebar.png';
+import { NavLink } from 'react-router-dom';
+
 
 const SideBar = () => {
   return (
-    <aside className='w-64 bg-white border-r min-h-screen flex flex-col'>
-      <img src={logoSidebar} alt="ddd" />
-       <div className="p-5 border-b">
-        <h1 className="text-xl font-bold text-blue-600">
-          Velocity RMS
-        </h1>
-        <p className="text-xs text-gray-500">
-          Floor Management
-        </p>
+    <aside className='w-64 bg-white border-r h-screen fixed top-0 left-0 '>
+      <div className='flex items-center justify-center'>
+        <img src={logoSidebar} className='w-10 h-10' alt="logo" />
+        <div className="p-5">
+          <h1 className="text-xl font-bold text-blue-600">
+            Velocity RMS
+          </h1>
+          <p className="text-xs text-gray-500">
+            Floor Management
+          </p>
+        </div>
+      </div>
+      <div className='flex flex-col justify-between h-[calc(100vh-80px)]'>
+        <div className='flex flex-col w-full gap-1 justify-center mt-3'>
+          <NavLink to={'/'} className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 cursor-pointer'>
+            <div>
+              <LayoutDashboard className='w-6 h-6' />
+            </div>
+            <div className='font-semibold'>Dashboard</div>
+          </NavLink>
+          <NavLink to={'/'} className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 cursor-pointer'>
+            <div>
+              <HandPlatter className='w-6 h-6' />
+            </div>
+            <div className='font-semibold'>Tables</div>
+          </NavLink>
+          <NavLink to={'/'} className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 cursor-pointer'>
+            <div>
+              <NotebookText className='w-6 h-6' />
+            </div>
+            <div className='font-semibold'>Orders</div>
+          </NavLink>
+        </div>
+        <div className='flex flex-col w-full gap-1 justify-center mt-3 border-t border-gray-200'>
+          <NavLink to={'/'} className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 cursor-pointer'>
+            <div>
+              <Settings className='w-6 h-6' />
+            </div>
+            <div className='font-semibold'>Settings</div>
+          </NavLink>
+          <NavLink to={'/'} className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 cursor-pointer'>
+            <div>
+              <LogOut className='w-6 h-6' />
+            </div>
+            <div className='font-semibold'>Logout</div>
+          </NavLink>
+        </div>
       </div>
     </aside>
   )
