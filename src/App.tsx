@@ -6,7 +6,8 @@ import OrderDetail from "./pages/OrderDetail";
 import Home from "./pages/Home";
 import Table from "./pages/Table";
 import Menu from "./pages/Menu";
-import "./index.css"  
+import "./index.css"
+import MainLayout from "./pages/MainLayout";
 // Trang Home thay thế cho trang report
 function App() {
   let a: number = 6
@@ -16,12 +17,15 @@ function App() {
       <Routes>
         <Route path='*' element={<Navigate to="/login" />}></Route>
         <Route path='/login' element={<Login />}></Route>
-        <Route path="/" element={<Home></Home>}></Route> 
-        <Route path="/table" element={<Table></Table>}></Route>
         <Route path="/table/:id" element={<Menu></Menu>}></Route>
-        <Route path="/order" element={<Order></Order>}></Route>
-        <Route path="/order/:id" element={<OrderDetail></OrderDetail>}></Route>
-        <Route path='/payment' element={<Payment />}></Route>
+        <Route element={<MainLayout />}>
+          {/* <Route path="/" element={<Dashboard />} /> */}
+          <Route path="/" element={<Home></Home>}></Route>
+          <Route path="/table" element={<Table></Table>}></Route>
+          <Route path="/order" element={<Order></Order>}></Route>
+          <Route path="/order/:id" element={<OrderDetail></OrderDetail>}></Route>
+          <Route path='/payment' element={<Payment />}></Route>
+        </Route>
       </Routes>
     </BrowserRouter>
   )

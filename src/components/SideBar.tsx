@@ -5,7 +5,7 @@ import { NavLink } from 'react-router-dom';
 
 const SideBar = () => {
   return (
-    <aside className='w-64 bg-white border-r h-screen fixed top-0 left-0 '>
+    <aside className='w-64 bg-white border-r h-screen fixed top-0 left-0 flex flex-col'>
       <div className='flex items-center justify-center'>
         <img src={logoSidebar} className='w-10 h-10' alt="logo" />
         <div className="p-5">
@@ -17,7 +17,7 @@ const SideBar = () => {
           </p>
         </div>
       </div>
-      <div className='flex flex-col justify-between h-[calc(100vh-80px)]'>
+      <div className='flex flex-col justify-between flex-1'>
         <div className='flex flex-col w-full gap-1 justify-center mt-3'>
           <NavLink to={'/'} className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 cursor-pointer'>
             <div>
