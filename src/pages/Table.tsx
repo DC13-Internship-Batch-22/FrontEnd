@@ -1,8 +1,11 @@
-import React from 'react'
+import SideBar from '../components/SideBar'
 
 const Table = () => {
   return (
-    <div>Table</div>
+    <div className='bg-red-500'>
+      <SideBar/>
+      <h1 className='bg-red-500'>Heelo</h1>
+    </div>
   )
 }
 
