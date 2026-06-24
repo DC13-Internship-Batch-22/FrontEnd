@@ -6,8 +6,7 @@ import OrderDetail from "./pages/OrderDetail";
 import Home from "./pages/Home";
 import Table from "./pages/Table";
 import Menu from "./pages/Menu";
-
-
+import "./index.css"  
 // Trang Home thay thế cho trang report
 function App() {
   let a: number = 6
