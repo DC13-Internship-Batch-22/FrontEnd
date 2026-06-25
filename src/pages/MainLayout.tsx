@@ -1,6 +1,7 @@
 import React from 'react'
 import SideBar from '../components/SideBar'
 import { Outlet } from 'react-router-dom'
+import Header from '../components/Header'
 
 const MainLayout = () => {
   return (
@@ -8,6 +9,7 @@ const MainLayout = () => {
       <SideBar />
 
       <main className="ml-64 min-h-screen">
+        <Header/>
         <Outlet />
       </main>
     </>
