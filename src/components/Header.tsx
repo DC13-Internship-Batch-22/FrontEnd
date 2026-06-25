@@ -7,9 +7,7 @@ const Header = () => {
       <Bell />
       <CircleQuestionMark />
       <img className='w-10 h-10 rounded-2xl border-gray-300 border-2 object-cover cursor-pointer' src={avatarHeader} alt="Avatar" />
-
     </div>
-
   )
 }
 
