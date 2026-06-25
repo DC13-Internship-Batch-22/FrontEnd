@@ -9,10 +9,20 @@ import { useNavigate } from "react-router-dom";
 const tables = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
   status:
-    i === 2 || i === 6 || i === 11
+    i === 2 || i === 6 || i === 11 || i === 18
       ? "Occupied"
       : "Available",
 }));
+
+const totalTables = tables.length;
+
+const occupiedTables = tables.filter(
+  (table) => table.status === "Occupied"
+).length;
+
+const availableTables = tables.filter(
+  (table) => table.status === "Available"
+).length;
 
 const Table = () => {
   const navigate = useNavigate();
@@ -27,7 +37,7 @@ const Table = () => {
                 Total Tables
               </p>
               <h2 className="text-3xl font-bold mt-4">
-                20
+                {totalTables}
               </h2>
               <p className="text-gray-400 text-sm">
                 Full Capacity
@@ -48,7 +58,8 @@ const Table = () => {
                 Available
               </p>
               <h2 className="text-3xl font-bold mt-4">
-                17
+
+                {availableTables}
               </h2>
               <p className="text-green-500 text-sm">
                 Ready for seating
@@ -69,7 +80,7 @@ const Table = () => {
                 Occupied
               </p>
               <h2 className="text-3xl font-bold mt-4">
-                3
+                {occupiedTables}
               </h2>
               <p className="text-amber-500 text-sm">
                 Active service
@@ -95,7 +106,7 @@ const Table = () => {
             {tables.map((table) => (
               <div
                 key={table.id}
-                className={`group relative bg-white border rounded-lg p-4 border-t-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]
+                className={`group relative bg-white border rounded-lg p-4 border-t-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-[3px]
                 ${table.status === "Available"
                     ? "border-t-green-500"
                     : "border-t-amber-500"
@@ -134,20 +145,21 @@ const Table = () => {
                   )}
                 </div>
 
+
                 {/* Overlay Hover */}
-                <div className="absolute inset-0 bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                <div className="mt-4  pt-3 h-10 flex items-center group-hover:border-t group-hover:border-gray-300 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 ">
                   {table.status === "Available" ? (
                     <button
                       onClick={() => navigate(`/table/${table.id}`)}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 cursor-pointer"
+                      className="w-full text-left text-blue-600 cursor-pointer"
                     >
-                      New Order
+                      New Order →
                     </button>
                   ) : (
                     <button
-                      className="px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 cursor-pointer"
+                      className="w-full text-left text-amber-600 cursor-pointer"
                     >
-                      View Detail
+                      View Bill →
                     </button>
                   )}
                 </div>
