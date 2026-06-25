@@ -10,8 +10,6 @@ import "./index.css"
 import MainLayout from "./pages/MainLayout";
 // Trang Home thay thế cho trang report
 function App() {
-  let a: number = 6
-  console.log(a);
   return (
     <BrowserRouter>
       <Routes>
