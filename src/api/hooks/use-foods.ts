@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { foodService } from "../services/food-service";
+import { foodService } from "../services";
 
 export function useFoods() {
   return useQuery({

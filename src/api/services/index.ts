@@ -1,3 +1,4 @@
 // API Services
-export { foodService } from './food-service.js';
-export { reportService } from './report-service.js';
+export { authService } from './auth-service.ts';
+export { foodService } from './food-service.ts';
+export { reportService } from './report-service.ts';
