@@ -19,7 +19,7 @@ const SideBar = () => {
       </div>
       <div className='flex flex-col justify-between flex-1'>
         <div className='flex flex-col w-full gap-1 justify-center mt-3'>
-          <NavLink to={'/home'} className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 cursor-pointer'>
+          <NavLink to={'/dashboard'} className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 cursor-pointer'>
             <div>
               <LayoutDashboard className='w-6 h-6' />
             </div>
