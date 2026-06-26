@@ -1,4 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import AddItemDrawer from "@/components/order/AddItemDrawer";
+import type { Food } from "@/types/food";
+import { formatTime } from "@/utils/formatTime";
+import { Check, DollarSign, Plus, SquarePen, Trash, X } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface OrderItem {
   id: string;
@@ -17,18 +21,6 @@ interface Order {
   totalAmount: number;
 }
 
-interface FoodItem {
-  id: number;
-  name: string;
-  price: number;
-  imageUrl: string;
-  status: "AVAILABLE" | string;
-  categoryId: number;
-  categoryName: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 const MOCK_ORDER: Order = {
   orderId: "ORD-8942",
   tableNumber: 14,
@@ -36,10 +28,10 @@ const MOCK_ORDER: Order = {
   createdAt: new Date(Date.now() - 32 * 60 * 1000).toISOString(),
   updatedAt: new Date(Date.now() - 4 * 60 * 1000).toISOString(),
   items: [
-    { id: "1", name: "Prime Ribeye Steak",     quantity: 1, unitPrice: 42 },
+    { id: "1", name: "Prime Ribeye Steak", quantity: 1, unitPrice: 42 },
     { id: "2", name: "Grilled Atlantic Salmon", quantity: 1, unitPrice: 34 },
-    { id: "3", name: "Lobster Bisque",          quantity: 2, unitPrice: 16 },
-    { id: "4", name: "Cabernet Sauvignon",      quantity: 2, unitPrice: 24 },
+    { id: "3", name: "Lobster Bisque", quantity: 2, unitPrice: 16 },
+    { id: "4", name: "Cabernet Sauvignon", quantity: 2, unitPrice: 24 },
   ],
   totalAmount: 156,
 };
@@ -66,290 +58,15 @@ function useOrder(orderId: string) {
   return { order, loading, error };
 }
 
-function useFoods(enabled: boolean) {
-  const [foods, setFoods] = useState<FoodItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!enabled) return;
-    setLoading(true);
-
-    fetch("http://localhost:8080/foods")
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data: FoodItem[]) => setFoods(data))
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false));
-
-    // const t = setTimeout(() => {
-    //   setFoods(MOCK_FOODS);
-    //   setLoading(false);
-    // }, 300);
-    // return () => clearTimeout(t);
-  }, [enabled]);
-
-  return { foods, loading, error };
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
-}
-
-function useElapsed(iso: string) {
-  const [elapsed, setElapsed] = useState("");
-  useEffect(() => {
-    function calc() {
-      const d = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-      if (d < 60) return `${d}s`;
-      if (d < 3600) return `${Math.floor(d / 60)}m ${d % 60}s`;
-      return `${Math.floor(d / 3600)}h ${Math.floor((d % 3600) / 60)}m`;
-    }
-    setElapsed(calc());
-    const id = setInterval(() => setElapsed(calc()), 1000);
-    return () => clearInterval(id);
-  }, [iso]);
-  return elapsed;
-}
-
-function useLastUpdated(iso: string) {
-  const [label, setLabel] = useState("");
-  useEffect(() => {
-    function calc() {
-      const d = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-      if (d < 60) return `${d}s ago`;
-      if (d < 3600) return `${Math.floor(d / 60)}m ago`;
-      return `${Math.floor(d / 3600)}h ago`;
-    }
-    setLabel(calc());
-    const id = setInterval(() => setLabel(calc()), 10000);
-    return () => clearInterval(id);
-  }, [iso]);
-  return label;
-}
-
 const STATUS_CONFIG: Record<Order["status"], { label: string; color: string; bg: string }> = {
-  pending:   { label: "Pending",   color: "text-amber-700", bg: "bg-amber-50 border-amber-200"  },
-  preparing: { label: "Preparing", color: "text-blue-700",  bg: "bg-blue-50  border-blue-200"   },
-  ready:     { label: "Ready",     color: "text-green-700", bg: "bg-green-50 border-green-200"  },
-  completed: { label: "Completed", color: "text-slate-700", bg: "bg-slate-50 border-slate-200"  },
-  cancelled: { label: "Cancelled", color: "text-red-700",   bg: "bg-red-50   border-red-200"    },
+  pending: { label: "Pending", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
+  preparing: { label: "Preparing", color: "text-blue-700", bg: "bg-blue-50  border-blue-200" },
+  ready: { label: "Ready", color: "text-green-700", bg: "bg-green-50 border-green-200" },
+  completed: { label: "Completed", color: "text-slate-700", bg: "bg-slate-50 border-slate-200" },
+  cancelled: { label: "Cancelled", color: "text-red-700", bg: "bg-red-50   border-red-200" },
 };
 
-const IconEdit = () => (
-  <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
-    <path d="M11.5 1.5l2 2-9 9H2.5v-2l9-9z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-const IconCheck = () => (
-  <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
-    <path d="M2.5 8l4 4 6-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-const IconTrash = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-    <path d="M2 4h12M5 4V2.5h6V4M6 7v5M10 7v5M3 4l1 9h8l1-9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-const IconPlus = () => (
-  <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
-    <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-  </svg>
-);
-const IconX = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-  </svg>
-);
-const IconSearch = () => (
-  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-    <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.3"/>
-    <path d="M10.5 10.5l3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-  </svg>
-);
-const IconCard = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
-    <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.8"/>
-    <path d="M2 10h20" stroke="currentColor" strokeWidth="1.8"/>
-  </svg>
-);
-
-function AddItemDrawer({
-  existingIds,
-  onAdd,
-  onClose,
-}: {
-  existingIds: Set<string>;
-  onAdd: (food: FoodItem, qty: number) => void;
-  onClose: () => void;
-}) {
-  const { foods, loading, error } = useFoods(true);
-  const [search, setSearch] = useState("");
-  const [quantities, setQuantities] = useState<Record<number, number>>({});
-  const drawerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) onClose();
-    }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [onClose]);
-
-  const available = foods.filter(f => f.status === "AVAILABLE");
-  const filtered = available.filter(f =>
-    f.name.toLowerCase().includes(search.toLowerCase()) ||
-    f.categoryName.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const grouped: Record<string, FoodItem[]> = {};
-  for (const f of filtered) {
-    if (!grouped[f.categoryName]) grouped[f.categoryName] = [];
-    grouped[f.categoryName].push(f);
-  }
-
-  const setQty = (id: number, val: number) =>
-    setQuantities(prev => ({ ...prev, [id]: Math.max(1, val) }));
-
-  function handleAdd(food: FoodItem) {
-    const qty = quantities[food.id] ?? 1;
-    onAdd(food, qty);
-    setQuantities(prev => ({ ...prev, [food.id]: 1 }));
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/30 backdrop-blur-[2px]" onClick={onClose} />
-
-      <div
-        ref={drawerRef}
-        className="w-[400px] bg-white h-full shadow-2xl flex flex-col animate-[slideIn_0.22s_ease-out]"
-        style={{ animation: "slideIn 0.22s ease-out" }}
-      >
-        <style>{`
-          @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0.6; }
-            to   { transform: translateX(0);    opacity: 1; }
-          }
-        `}</style>
-
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">Add Items</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Select items to add to this order</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
-          >
-            <IconX />
-          </button>
-        </div>
-
-        <div className="px-5 py-3 border-b border-slate-100 shrink-0">
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-              <IconSearch />
-            </span>
-            <input
-              autoFocus
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search food or category…"
-              className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50"
-            />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {loading && (
-            <div className="flex flex-col items-center justify-center h-40 gap-2">
-              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              <p className="text-xs text-slate-400">Loading menu…</p>
-            </div>
-          )}
-
-          {error && (
-            <div className="m-5 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
-              <p className="font-semibold mb-0.5">Failed to load menu</p>
-              <p className="text-xs text-red-500">{error}</p>
-            </div>
-          )}
-
-          {!loading && !error && filtered.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-40 text-slate-400">
-              <p className="text-sm">No items found</p>
-            </div>
-          )}
-
-          {!loading && !error && Object.entries(grouped).map(([category, items]) => (
-            <div key={category}>
-              <div className="px-5 py-2 bg-slate-50 border-b border-slate-100 sticky top-0">
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{category}</p>
-              </div>
-              <div className="divide-y divide-slate-100">
-                {items.map(food => {
-                  const alreadyIn = existingIds.has(String(food.id));
-                  const qty = quantities[food.id] ?? 1;
-                  return (
-                    <div
-                      key={food.id}
-                      className={`px-5 py-3 flex items-center gap-3 transition-colors ${alreadyIn ? "opacity-50" : "hover:bg-slate-50"}`}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 truncate">{food.name}</p>
-                        <p className="text-xs text-slate-500">${food.price.toFixed(2)}</p>
-                        {alreadyIn && (
-                          <p className="text-[10px] text-blue-500 font-medium mt-0.5">Already in order</p>
-                        )}
-                      </div>
-
-                      {!alreadyIn && (
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <button
-                            onClick={() => setQty(food.id, qty - 1)}
-                            className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 text-sm font-bold transition-colors"
-                          >−</button>
-                          <span className="w-5 text-center text-sm font-bold text-slate-900 tabular-nums">{qty}</span>
-                          <button
-                            onClick={() => setQty(food.id, qty + 1)}
-                            className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 text-sm font-bold transition-colors"
-                          >+</button>
-                        </div>
-                      )}
-
-                      {!alreadyIn && (
-                        <button
-                          onClick={() => handleAdd(food)}
-                          className="shrink-0 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 active:scale-95 transition-all"
-                        >
-                          Add
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="px-5 py-4 border-t border-slate-200 shrink-0">
-          <button
-            onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors"
-          >
-            Done
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ItemRow({
+const ItemRow = ({
   item,
   editMode,
   onQtyChange,
@@ -359,7 +76,7 @@ function ItemRow({
   editMode: boolean;
   onQtyChange: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
-}) {
+}) => {
   return (
     <div className="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50/70 transition-colors group">
       <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -369,7 +86,7 @@ function ItemRow({
             className="shrink-0 w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-400 hover:text-red-600 transition-colors"
             title="Remove item"
           >
-            <IconTrash />
+            <Trash size={15} />
           </button>
         )}
         <div className="min-w-0">
@@ -413,21 +130,18 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
     if (fetchedOrder) setOrder(fetchedOrder);
   }, [fetchedOrder]);
 
-  const elapsed = useElapsed(order?.createdAt ?? new Date().toISOString());
-  const lastUpdated = useLastUpdated(order?.updatedAt ?? new Date().toISOString());
-
-  function enterEdit() {
+  const enterEdit = () => {
     if (!order) return;
     setDraftItems(order.items.map(i => ({ ...i })));
     setEditMode(true);
   }
 
-  function cancelEdit() {
+  const cancelEdit = () => {
     setEditMode(false);
     setDraftItems([]);
   }
 
-  function saveEdit() {
+  const saveEdit = () => {
     if (!order) return;
     const items = draftItems.filter(i => i.quantity > 0);
     const totalAmount = items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
@@ -436,15 +150,15 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
     setDraftItems([]);
   }
 
-  function updateQty(id: string, qty: number) {
+  const updateQty = (id: string, qty: number) => {
     setDraftItems(prev => prev.map(i => i.id === id ? { ...i, quantity: Math.max(1, qty) } : i));
   }
 
-  function removeItem(id: string) {
+  const removeItem = (id: string) => {
     setDraftItems(prev => prev.filter(i => i.id !== id));
   }
 
-  function handleAddFood(food: FoodItem, qty: number) {
+  const handleAddFood = (food: Food, qty: number) => {
     setDraftItems(prev => {
       const existing = prev.find(i => i.id === String(food.id));
       if (existing) {
@@ -482,6 +196,9 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
 
   const status = STATUS_CONFIG[order.status];
 
+  console.log("DEBUG-0: ", addDrawerOpen);
+  console.log("DEBUG-0.2: ", existingIds);
+
   return (
     <div className="min-h-screen bg-slate-50 p-6 font-['Inter',sans-serif]">
       <div className="flex items-end justify-between mb-6 max-w-5xl mx-auto">
@@ -499,7 +216,7 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
             onClick={enterEdit}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 active:scale-95 transition-all shadow-sm"
           >
-            <IconEdit />
+            <SquarePen />
             Edit Order
           </button>
         ) : (
@@ -508,14 +225,14 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
               onClick={cancelEdit}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-semibold hover:bg-slate-50 active:scale-95 transition-all"
             >
-              <IconX />
+              <X />
               Cancel
             </button>
             <button
               onClick={saveEdit}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 active:scale-95 transition-all shadow-sm"
             >
-              <IconCheck />
+              <Check />
               Save Changes
             </button>
           </div>
@@ -544,7 +261,7 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
                   onClick={() => setAddDrawerOpen(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 active:scale-95 transition-all"
                 >
-                  <IconPlus />
+                  <Plus />
                   Add Item
                 </button>
               )}
@@ -596,14 +313,6 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
                 <span className="text-slate-500">Order time</span>
                 <span className="font-semibold text-slate-900">{formatTime(order.createdAt)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Elapsed</span>
-                <span className="font-semibold text-amber-600 tabular-nums">{elapsed}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Last updated</span>
-                <span className="font-semibold text-slate-900">{lastUpdated}</span>
-              </div>
             </div>
           </div>
 
@@ -618,7 +327,7 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
           </div>
 
           <button className="w-full py-3.5 rounded-2xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">
-            <IconCard />
+            <DollarSign />
             Proceed to Payment
           </button>
         </div>
