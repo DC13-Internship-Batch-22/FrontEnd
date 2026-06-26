@@ -1,138 +1,33 @@
+import { useOrder, useUpdateOrderItems, useUpdateOrderStatus } from "@/api/hooks";
 import AddItemDrawer from "@/components/order/AddItemDrawer";
+import ItemRow from "@/components/order/ItemRow";
 import type { Food } from "@/types/food";
+import type { Order, OrderItem, OrderStatus } from "@/types/order";
 import { formatTime } from "@/utils/formatTime";
-import { Check, DollarSign, Plus, SquarePen, Trash, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Check, DollarSign, Loader2, Plus, SquarePen, X } from "lucide-react";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
-interface OrderItem {
-  id: string;
-  name: string;
-  quantity: number;
-  unitPrice: number;
-}
-
-interface Order {
-  orderId: string;
-  tableNumber: number;
-  status: "pending" | "preparing" | "ready" | "completed" | "cancelled";
-  createdAt: string;
-  updatedAt: string;
-  items: OrderItem[];
-  totalAmount: number;
-}
-
-const MOCK_ORDER: Order = {
-  orderId: "ORD-8942",
-  tableNumber: 14,
-  status: "pending",
-  createdAt: new Date(Date.now() - 32 * 60 * 1000).toISOString(),
-  updatedAt: new Date(Date.now() - 4 * 60 * 1000).toISOString(),
-  items: [
-    { id: "1", name: "Prime Ribeye Steak", quantity: 1, unitPrice: 42 },
-    { id: "2", name: "Grilled Atlantic Salmon", quantity: 1, unitPrice: 34 },
-    { id: "3", name: "Lobster Bisque", quantity: 2, unitPrice: 16 },
-    { id: "4", name: "Cabernet Sauvignon", quantity: 2, unitPrice: 24 },
-  ],
-  totalAmount: 156,
+const STATUS_CONFIG: Record<Order["orderStatus"], { label: string; color: string; bg: string }> = {
+  PENDING: { label: "Pending", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
+  CONFIRMED: { label: "Completed", color: "text-slate-700", bg: "bg-slate-50 border-slate-200" },
 };
 
-function useOrder(orderId: string) {
-  const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, _setError] = useState<string | null>(null);
+export default function OrderDetail() {
+  const { id } = useParams();
+  const orderId = Number(id);
 
-  useEffect(() => {
-    setLoading(true);
-    // fetch(`/api/orders/${orderId}`)
-    //   .then(r => r.json())
-    //   .then(setOrder)
-    //   .catch(e => setError(e.message))
-    //   .finally(() => setLoading(false));
-    const t = setTimeout(() => {
-      setOrder({ ...MOCK_ORDER, orderId });
-      setLoading(false);
-    }, 400);
-    return () => clearTimeout(t);
-  }, [orderId]);
+  const { data: order, isFetching: loading, error, isError } = useOrder(orderId);
+  const { mutate: updateItems, isPending: saving } = useUpdateOrderItems(orderId);
+  const { mutate: updateStatus, isPending: confirming } = useUpdateOrderStatus(orderId);
 
-  return { order, loading, error };
-}
-
-const STATUS_CONFIG: Record<Order["status"], { label: string; color: string; bg: string }> = {
-  pending: { label: "Pending", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
-  preparing: { label: "Preparing", color: "text-blue-700", bg: "bg-blue-50  border-blue-200" },
-  ready: { label: "Ready", color: "text-green-700", bg: "bg-green-50 border-green-200" },
-  completed: { label: "Completed", color: "text-slate-700", bg: "bg-slate-50 border-slate-200" },
-  cancelled: { label: "Cancelled", color: "text-red-700", bg: "bg-red-50   border-red-200" },
-};
-
-const ItemRow = ({
-  item,
-  editMode,
-  onQtyChange,
-  onRemove,
-}: {
-  item: OrderItem;
-  editMode: boolean;
-  onQtyChange: (id: string, qty: number) => void;
-  onRemove: (id: string) => void;
-}) => {
-  return (
-    <div className="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50/70 transition-colors group">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        {editMode && (
-          <button
-            onClick={() => onRemove(item.id)}
-            className="shrink-0 w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-400 hover:text-red-600 transition-colors"
-            title="Remove item"
-          >
-            <Trash size={15} />
-          </button>
-        )}
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-900 truncate">{item.name}</p>
-          <p className="text-xs text-slate-400">${item.unitPrice.toFixed(2)} each</p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4 shrink-0">
-        {editMode ? (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onQtyChange(item.id, item.quantity - 1)}
-              className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base leading-none transition-colors"
-            >−</button>
-            <span className="w-6 text-center text-sm font-bold text-slate-900 tabular-nums">{item.quantity}</span>
-            <button
-              onClick={() => onQtyChange(item.id, item.quantity + 1)}
-              className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold text-base leading-none transition-colors"
-            >+</button>
-          </div>
-        ) : (
-          <span className="text-xs text-slate-400 w-12 text-right">× {item.quantity}</span>
-        )}
-        <p className="text-sm font-bold text-slate-900 w-16 text-right tabular-nums">
-          ${(item.unitPrice * item.quantity).toFixed(2)}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string }) {
-  const { order: fetchedOrder, loading, error } = useOrder(orderId);
-  const [order, setOrder] = useState<Order | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [draftItems, setDraftItems] = useState<OrderItem[]>([]);
   const [addDrawerOpen, setAddDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    if (fetchedOrder) setOrder(fetchedOrder);
-  }, [fetchedOrder]);
-
   const enterEdit = () => {
     if (!order) return;
-    setDraftItems(order.items.map(i => ({ ...i })));
+    setDraftItems(order.items.map((i: OrderItem) => ({ ...i })));
     setEditMode(true);
   }
 
@@ -143,37 +38,54 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
 
   const saveEdit = () => {
     if (!order) return;
-    const items = draftItems.filter(i => i.quantity > 0);
-    const totalAmount = items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
-    setOrder({ ...order, items, totalAmount, updatedAt: new Date().toISOString() });
-    setEditMode(false);
-    setDraftItems([]);
+    const items = draftItems
+      .filter(i => i.quantity > 0)
+      .map(i => ({ productId: i.productId, quantity: i.quantity }));
+    updateItems(items, {
+      onSuccess: () => {
+        setEditMode(false);
+        setDraftItems([]);
+      }
+    })
   }
 
-  const updateQty = (id: string, qty: number) => {
-    setDraftItems(prev => prev.map(i => i.id === id ? { ...i, quantity: Math.max(1, qty) } : i));
+  const updateQty = (id: number, qty: number) => {
+    setDraftItems(prev => prev.map(i => i.productId === id ? { ...i, quantity: Math.max(1, qty) } : i));
   }
 
-  const removeItem = (id: string) => {
-    setDraftItems(prev => prev.filter(i => i.id !== id));
+  const removeItem = (id: number) => {
+    setDraftItems(prev => prev.filter(i => i.productId !== id));
   }
 
   const handleAddFood = (food: Food, qty: number) => {
     setDraftItems(prev => {
-      const existing = prev.find(i => i.id === String(food.id));
+      const existing = prev.find(i => i.productId === food.id);
       if (existing) {
-        return prev.map(i => i.id === String(food.id) ? { ...i, quantity: i.quantity + qty } : i);
+        return prev.map(i =>
+          i.productId === food.id
+            ? { ...i, quantity: i.quantity + qty }
+            : i
+        );
       }
-      return [...prev, { id: String(food.id), name: food.name, quantity: qty, unitPrice: food.price }];
+      return [...prev, {
+        productId: food.id,
+        productName: food.name,
+        quantity: qty,
+        price: food.price
+      }];
     });
+  }
+
+  const handleProceedToPayment = () => {
+    updateStatus('CONFIRMED');
   }
 
   const displayItems = editMode ? draftItems : (order?.items ?? []);
   const displayTotal = editMode
-    ? draftItems.reduce((s, i) => s + i.unitPrice * i.quantity, 0)
+    ? draftItems.reduce((s, i) => s + i.price * i.quantity, 0)
     : (order?.totalAmount ?? 0);
 
-  const existingIds = new Set(draftItems.map(i => i.id));
+  const existingIds = new Set(draftItems.map(i => i.productId));
 
   if (loading) {
     return (
@@ -186,57 +98,58 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
     );
   }
 
-  if (error || !order) {
+  if (isError || !order) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-red-600 text-sm">{error ?? "Order not found."}</p>
+        <p className="text-red-600 text-sm">{error?.message ?? "Order not found."}</p>
       </div>
     );
   }
 
-  const status = STATUS_CONFIG[order.status];
-
-  console.log("DEBUG-0: ", addDrawerOpen);
-  console.log("DEBUG-0.2: ", existingIds);
+  const status = STATUS_CONFIG[order.orderStatus as OrderStatus];
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 font-['Inter',sans-serif]">
-      <div className="flex items-end justify-between mb-6 max-w-5xl mx-auto">
-        <div>
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
-            <a href="/order" className="hover:text-blue-600 transition-colors">Orders</a>
-            <span>›</span>
-            <span className="text-blue-600 font-semibold">#{order.orderId}</span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Order Details</h1>
+      <div className="mb-6 max-w-5xl mx-auto space-y-3">
+        <div className="flex items-center gap-2 text-sm text-slate-400">
+          <Link to="/order" className="hover:text-blue-600 transition-colors font-medium">
+            Orders
+          </Link>
+          <span>/</span>
+          <span className="text-blue-600 font-semibold">#{order.order_id}</span>
         </div>
 
-        {!editMode ? (
-          <button
-            onClick={enterEdit}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 active:scale-95 transition-all shadow-sm"
-          >
-            <SquarePen />
-            Edit Order
-          </button>
-        ) : (
-          <div className="flex gap-2">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Order Details</h1>
+
+          {!editMode ? (
             <button
-              onClick={cancelEdit}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-semibold hover:bg-slate-50 active:scale-95 transition-all"
+              onClick={enterEdit}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 active:scale-95 transition-all shadow-sm"
             >
-              <X />
-              Cancel
+              <SquarePen size={16} />
+              Edit Order
             </button>
-            <button
-              onClick={saveEdit}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 active:scale-95 transition-all shadow-sm"
-            >
-              <Check />
-              Save Changes
-            </button>
-          </div>
-        )}
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={cancelEdit}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-semibold hover:bg-slate-50 active:scale-95 transition-all"
+              >
+                <X size={16} />
+                Cancel
+              </button>
+              <button
+                onClick={saveEdit}
+                disabled={saving}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 active:scale-95 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="max-w-5xl mx-auto grid grid-cols-12 gap-5">
@@ -281,9 +194,9 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
                   )}
                 </div>
               ) : (
-                displayItems.map(item => (
+                displayItems.map((item: OrderItem) => (
                   <ItemRow
-                    key={item.id}
+                    key={item.productId}
                     item={item}
                     editMode={editMode}
                     onQtyChange={updateQty}
@@ -326,9 +239,13 @@ export default function OrderDetail({ orderId = "ORD-8942" }: { orderId?: string
             </div>
           </div>
 
-          <button className="w-full py-3.5 rounded-2xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">
-            <DollarSign />
-            Proceed to Payment
+          <button
+            onClick={handleProceedToPayment}
+            disabled={confirming || order.orderStatus === 'CONFIRMED'}
+            className="w-full py-3.5 rounded-2xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {confirming ? <Loader2 className="animate-spin" /> : <DollarSign />}
+            {confirming ? 'Processing...' : order.orderStatus === 'CONFIRMED' ? 'Already Confirmed' : 'Proceed to Payment'}
           </button>
         </div>
       </div>
