@@ -1,35 +1,14 @@
 import LogoLogin from "../assets/LogoLogin.png"
 import { Button, Checkbox, Form, Input } from 'antd'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import { useLogin } from "@/api/hooks"
 
 type LoginForm = {
   username: string;
   password: string;
 };
 const Login = () => {
-  const navigate = useNavigate();
-  const login = async (value: LoginForm) => {
-    try {
-      const res = await axios({
-        url: "https://backend-production-f125.up.railway.app/auth/login",
-        method: "POST",
-        data: value
-      });
-
-      console.log(res.data);
-
-      if (res.data.accessToken) {
-        localStorage.setItem("accessToken", res.data.accessToken);
-        localStorage.setItem("refreshToken", res.data.refreshToken);
-
-        navigate("/dashboard");
-      }
-    } catch (err: any) {
-      console.log(err.response?.data || err.message);
-    }
-  };
+  const { mutate: login } = useLogin();
 
   const onFinish = (value: LoginForm) => {
     login(value);
