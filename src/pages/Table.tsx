@@ -13,6 +13,7 @@ interface TableType {
   tableNumber: string;
   capacity: number;
   status: string;
+  orderId?: number;
 }
 
 const Table = () => {
@@ -177,7 +178,7 @@ const Table = () => {
                   ) : (
                     <button
                       onClick={() =>
-                        navigate(`/table/${table.id}`)
+                        navigate(`/order/${table.orderId}`)
                       }
                       className="w-full text-left text-amber-600 cursor-pointer"
                     >
