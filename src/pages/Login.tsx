@@ -1,10 +1,39 @@
-import React from 'react'
 import LogoLogin from "../assets/LogoLogin.png"
 import { Button, Checkbox, Form, Input } from 'antd'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
-
+type LoginForm = {
+  username: string;
+  password: string;
+};
 const Login = () => {
+  const navigate = useNavigate();
+  const login = async (value: LoginForm) => {
+    try {
+      const res = await axios({
+        url: "https://backend-production-f125.up.railway.app/auth/login",
+        method: "POST",
+        data: value
+      });
+
+      console.log(res.data);
+
+      if (res.data.accessToken) {
+        localStorage.setItem("accessToken", res.data.accessToken);
+        localStorage.setItem("refreshToken", res.data.refreshToken);
+
+        navigate("/dashboard");
+      }
+    } catch (err: any) {
+      console.log(err.response?.data || err.message);
+    }
+  };
+
+  const onFinish = (value: LoginForm) => {
+    login(value);
+  };
   return (
     <div className='flex flex-col items-center justify-center min-h-screen gap-5 py-10 '
       style={{
@@ -25,7 +54,7 @@ const Login = () => {
           <h1 className='font-semibold text-2xl'>Sign In</h1>
           <p className='text-gray-700 text-lg'>Enter your credentials to manage your floor.</p>
         </div>
-        <Form requiredMark={false}>
+        <Form requiredMark={false} onFinish={onFinish}>
           <Form.Item name='username' layout='vertical' className='font-semibold' label="Username" rules={[
             {
               required: true,
@@ -58,6 +87,7 @@ const Login = () => {
 
           <Form.Item name="agreement">
             <Checkbox>
+              {" "}
               Remember device
             </Checkbox>
           </Form.Item>

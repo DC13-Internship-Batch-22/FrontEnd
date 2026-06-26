@@ -1,9 +1,17 @@
 import { HandPlatter, LayoutDashboard, LogOut, NotebookText, Settings } from 'lucide-react';
 import logoSidebar from '../assets/logo_sidebar.png';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 
 const SideBar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+
+    navigate("/login");
+  };
   return (
     <aside className='w-64 bg-white border-r border-gray-200 h-screen fixed top-0 left-0 flex flex-col'>
       <div className='flex items-center justify-center'>
@@ -45,12 +53,15 @@ const SideBar = () => {
             </div>
             <div className='font-semibold'>Settings</div>
           </NavLink>
-          <NavLink to={'/login'} className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 cursor-pointer'>
+          <div
+            onClick={handleLogout}
+            className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300 cursor-pointer'
+          >
             <div>
               <LogOut className='w-6 h-6' />
             </div>
             <div className='font-semibold'>Logout</div>
-          </NavLink>
+          </div>
         </div>
       </div>
     </aside>

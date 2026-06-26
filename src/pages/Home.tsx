@@ -8,14 +8,7 @@ import ReportPageHeader from "../components/report/ReportPageHeader";
 import ReportSummaryCard from "../components/report/ReportSummaryCard";
 import RevenueTrendChart from "../components/report/RevenueTrendChart";
 import TopSellingDishes from "../components/report/TopSellingDishes";
-import {
-  getCategorySales,
-  getOrdersByStatus,
-  getRecentLargeTransactions,
-  getReportSummary,
-  getRevenueTrend,
-  getTopSellingDishes,
-} from "../services/reportApi";
+import { reportService } from "../api/services";
 import type {
   CategorySales,
   DateRangeParams,
@@ -191,12 +184,20 @@ const Home = () => {
       orderStatusesResult,
       categorySalesResult,
     ] = await Promise.allSettled([
-      getReportSummary(params),
-      getRevenueTrend({ ...params, groupBy: "DAY" }),
-      getTopSellingDishes({ ...params, limit: 5, sortBy: "REVENUE" }),
-      getRecentLargeTransactions({ ...params, minAmount: 0, limit: 5 }),
-      getOrdersByStatus(params),
-      getCategorySales(params),
+      reportService.getReportSummary(params),
+      reportService.getRevenueTrend({ ...params, groupBy: "DAY" }),
+      reportService.getTopSellingDishes({
+        ...params,
+        limit: 5,
+        sortBy: "REVENUE",
+      }),
+      reportService.getRecentLargeTransactions({
+        ...params,
+        minAmount: 0,
+        limit: 5,
+      }),
+      reportService.getOrdersByStatus(params),
+      reportService.getCategorySales(params),
     ]);
 
     setData({
@@ -290,7 +291,7 @@ const Home = () => {
     setMenuAnalyticsError(undefined);
 
     try {
-      const dishes = await getTopSellingDishes({
+      const dishes = await reportService.getTopSellingDishes({
         ...appliedRange,
         limit: 100,
         sortBy: "REVENUE",
