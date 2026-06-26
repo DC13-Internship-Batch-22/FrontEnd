@@ -4,28 +4,48 @@ import {
   Users,
   Clock3,
 } from "lucide-react";
-
 import { useNavigate } from "react-router-dom";
-const tables = Array.from({ length: 20 }, (_, i) => ({
-  id: i + 1,
-  status:
-    i === 2 || i === 6 || i === 11 || i === 18
-      ? "Occupied"
-      : "Available",
-}));
+import { useEffect, useState } from "react";
+import { getTables } from "../api/services/tables-service";
 
-const totalTables = tables.length;
-
-const occupiedTables = tables.filter(
-  (table) => table.status === "Occupied"
-).length;
-
-const availableTables = tables.filter(
-  (table) => table.status === "Available"
-).length;
+interface TableType {
+  id: number;
+  tableNumber: string;
+  capacity: number;
+  status: string;
+}
 
 const Table = () => {
   const navigate = useNavigate();
+
+  const [tables, setTables] = useState<TableType[]>([]);
+  const [totalTables, setTotalTables] = useState(0);
+
+  useEffect(() => {
+    loadTables();
+  }, []);
+
+  const loadTables = async () => {
+    try {
+      const data = await getTables();
+
+      console.log("Danh sách bàn:", data);
+
+      setTables(data.content);
+      setTotalTables(data.totalElements);
+    } catch (error) {
+      console.error("Lỗi lấy danh sách bàn:", error);
+    }
+  };
+
+  const occupiedTables = tables.filter(
+    (table) => table.status === "OCCUPIED"
+  ).length;
+
+  const availableTables = tables.filter(
+    (table) => table.status === "AVAILABLE"
+  ).length;
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="p-8">
@@ -58,7 +78,6 @@ const Table = () => {
                 Available
               </p>
               <h2 className="text-3xl font-bold mt-4">
-
                 {availableTables}
               </h2>
               <p className="text-green-500 text-sm">
@@ -107,32 +126,32 @@ const Table = () => {
               <div
                 key={table.id}
                 className={`group relative bg-white border rounded-lg p-4 border-t-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-[3px]
-                ${table.status === "Available"
+                ${
+                  table.status === "AVAILABLE"
                     ? "border-t-green-500"
                     : "border-t-amber-500"
-                  }`}
+                }`}
               >
-                {/* Nội dung card */}
                 <div className="flex justify-between items-center">
                   <h3 className="font-bold text-lg">
-                    #{table.id}
+                    #{table.tableNumber}
                   </h3>
 
                   <span
-                    className={`text-xs px-2 py-1 rounded-full
-                    ${table.status === "Available"
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      table.status === "AVAILABLE"
                         ? "bg-green-100 text-green-600"
                         : "bg-amber-100 text-amber-600"
-                      }`}
+                    }`}
                   >
                     {table.status}
                   </span>
                 </div>
 
                 <div className="mt-4 text-sm text-gray-500">
-                  <p>👥 Cap. 4</p>
+                  <p>👥 Cap. {table.capacity}</p>
 
-                  {table.status === "Available" ? (
+                  {table.status === "AVAILABLE" ? (
                     <p className="mt-2 flex items-center gap-1">
                       <Clock3 size={14} />
                       Ready
@@ -140,23 +159,26 @@ const Table = () => {
                   ) : (
                     <p className="mt-2 flex items-center gap-1">
                       <Clock3 size={14} />
-                      35 min
+                      Occupied
                     </p>
                   )}
                 </div>
 
-
-                {/* Overlay Hover */}
-                <div className="mt-4  pt-3 h-10 flex items-center group-hover:border-t group-hover:border-gray-300 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 ">
-                  {table.status === "Available" ? (
+                <div className="mt-4 pt-3 h-10 flex items-center group-hover:border-t group-hover:border-gray-300 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  {table.status === "AVAILABLE" ? (
                     <button
-                      onClick={() => navigate(`/table/${table.id}`)}
+                      onClick={() =>
+                        navigate(`/table/${table.id}`)
+                      }
                       className="w-full text-left text-blue-600 cursor-pointer"
                     >
                       New Order →
                     </button>
                   ) : (
                     <button
+                      onClick={() =>
+                        navigate(`/table/${table.id}`)
+                      }
                       className="w-full text-left text-amber-600 cursor-pointer"
                     >
                       View Bill →

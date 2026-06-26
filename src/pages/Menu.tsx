@@ -1,8 +1,8 @@
 import { ArrowLeft, CirclePlus, Minus, Plus, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
-
+import { foodService } from '../api/services/food-service'
 const categories = [
   "All Items",
   "Burgers",
@@ -12,70 +12,36 @@ const categories = [
   "Desserts",
 ];
 
-const products = [
-  {
-    id: 1,
-    name: "Signature Truffle Burger",
-    price: 18.5,
-    image:
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
-  },
-  {
-    id: 2,
-    name: "Classic Margherita",
-    price: 14,
-    image:
-      "https://images.unsplash.com/photo-1513104890138-7c749659a591",
-  },
-  {
-    id: 3,
-    name: "Bourbon Old Fashioned",
-    price: 12,
-    image:
-      "https://images.unsplash.com/photo-1470337458703-46ad1756a187",
-  },
-  {
-    id: 4,
-    name: "Truffle Fries",
-    price: 8.5,
-    image:
-      "https://images.unsplash.com/photo-1573080496219-bb080dd4f877",
-  },
-  {
-    id: 5,
-    name: "Grilled Salmon",
-    price: 22,
-    image:
-      "https://images.unsplash.com/photo-1467003909585-2f8a72700288",
-  },
-  {
-    id: 6,
-    name: "Caesar Salad",
-    price: 10.5,
-    image:
-      "https://images.unsplash.com/photo-1546793665-c74683f339c1",
-  },
-  {
-    id: 7,
-    name: "Chocolate Lava Cake",
-    price: 9,
-    image:
-      "https://images.unsplash.com/photo-1606313564200-e75d5e30476c",
-  },
-  {
-    id: 8,
-    name: "Iced Matcha Latte",
-    price: 7.5,
-    image:
-      "https://images.unsplash.com/photo-1515823064-d6e0c04616a7",
-  },
-];
+interface Food {
+  id: number;
+  name: string;
+  price: number;
+  imageUrl: string;
+  status: string;
+  categoryId: number;
+  categoryName: string;
+}
 
 const Menu = () => {
+  const [products, setProducts] = useState<Food[]>([]);
   const { id } = useParams();
 
   const [cart, setCart] = useState<any[]>([]);
 
+  useEffect(() => {
+    loadFoods();
+  }, []);
+  const loadFoods = async () => {
+    try {
+      const data = await foodService.getFoods();
+
+      console.log(data);
+
+      setProducts(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const addToCart = (product: any) => {
     const existing = cart.find(
       (item) => item.id === product.id
@@ -183,7 +149,7 @@ const Menu = () => {
                 >
                   <div className="relative">
                     <img
-                      src={product.image}
+                      src={product.imageUrl}
                       alt={product.name}
                       className="h-40 w-full object-cover"
                     />
@@ -222,8 +188,8 @@ const Menu = () => {
               <p className="text-sm text-gray-500">
                 TABLE #{id}
               </p>
-              {cart?.length>0 &&(<button onClick={removeAll} className="font-bold text-blue-800 cursor-pointer">Clear All</button>)}
-              
+              {cart?.length > 0 && (<button onClick={removeAll} className="font-bold text-blue-800 cursor-pointer">Clear All</button>)}
+
             </div>
           </div>
 
@@ -240,7 +206,7 @@ const Menu = () => {
                     className=" rounded-lg"
                   >
                     <div className="flex gap-3">
-                      <img src={item.image} alt="" className="h-18 w-20 object-cover rounded" />
+                      <img src={item.imageUrl} alt="" className="h-18 w-20 object-cover rounded" />
                       <div className="flex-1">
                         <div className="flex justify-between ">
                           <h4 className="font-medium">
