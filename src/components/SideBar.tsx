@@ -1,4 +1,4 @@
-import { HandPlatter, LayoutDashboard, LogOut, NotebookText, Settings } from 'lucide-react';
+import { HandPlatter, LayoutDashboard, LogOut, NotebookText, Settings, Soup } from 'lucide-react';
 import logoSidebar from '../assets/logo_sidebar.png';
 import { NavLink } from 'react-router-dom';
 import { useLogout } from '@/api/hooks';
@@ -35,6 +35,12 @@ const SideBar = () => {
       path: '/order',
       icon: <NotebookText className='w-6 h-6' />,
       label: 'Orders'
+    },
+    {
+      key: 'menu',
+      path: '/menu',
+      icon: <Soup className='w-6 h-6' />,
+      label: 'Menu'
     }
   ];
 
