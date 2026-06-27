@@ -2,6 +2,7 @@ import { ArrowLeft, CirclePlus, Minus, Plus, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Header from "../components/Header";
+<<<<<<< Updated upstream
 import { foodService } from '../api/services/food-service'
 const categories = [
   "All Items",
@@ -11,6 +12,11 @@ const categories = [
   "Sides",
   "Desserts",
 ];
+=======
+import { useCategories, useCreateOrder, useFoods } from "@/api/hooks";
+import { message } from "antd";
+import { useQueryClient } from "@tanstack/react-query";
+>>>>>>> Stashed changes
 
 interface Food {
   id: number;
@@ -26,7 +32,14 @@ const Menu = () => {
   const [products, setProducts] = useState<Food[]>([]);
   const { id } = useParams();
 
+<<<<<<< Updated upstream
   const [cart, setCart] = useState<any[]>([]);
+=======
+  const queryClient = useQueryClient();
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined);
+  const [cart, setCart] = useState<CartItem[]>([]);
+>>>>>>> Stashed changes
 
   useEffect(() => {
     loadFoods();
@@ -98,7 +111,35 @@ const Menu = () => {
   };
 
   const removeItem = (id: number) => {
+<<<<<<< Updated upstream
     setCart(cart.filter(item => item.id !== id));
+=======
+    setCart(cart.filter((item) => item.id !== id));
+  };
+
+  const removeAll = () => setCart([]);
+
+  const handleCreateOrder = () => {
+    createOrder(
+      {
+        table_id: Number(id),
+        items: cart.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+        })),
+      },
+      {
+        onSuccess: () => {
+          message.success("Order placed!");
+          queryClient.invalidateQueries({ queryKey: ["tables"] })
+          navigate("/table");
+        },
+        onError: () => {
+          message.error("Order failed. Try again!");
+        },
+      }
+    )
+>>>>>>> Stashed changes
   }
 
   const removeAll = () => {
