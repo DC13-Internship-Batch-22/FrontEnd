@@ -29,16 +29,6 @@ const Login = () => {
     }
   }, [isError, error, errorMessage]);
 
-  const handleSubmit = () => {
-    form.validateFields().then((values) => {
-      form.setFields([
-        { name: 'username', errors: [] },
-        { name: 'password', errors: [] },
-      ]);
-      onFinish(values);
-    }).catch(() => {});
-  };
-
   return (
     <div
       className='flex flex-col items-center justify-center min-h-screen gap-5 py-10'
@@ -121,7 +111,6 @@ const Login = () => {
               size='large'
               loading={isPending}
               className='bg-blue-700! hover:bg-blue-600!'
-              onClick={handleSubmit}
             >
               {isPending ? 'Signing In...' : 'Sign In'}
             </Button>
