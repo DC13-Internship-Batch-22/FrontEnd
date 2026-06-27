@@ -77,7 +77,6 @@ export default function OrdersList() {
   });
 
   const orders: Order[] = data?.items ?? [];
-  const total = data?.totalCount ?? 0;
   const totalPages = data?.totalPage ?? 1;
 
   const { mutate: deleteOrder, isPending: deleting } = useDeleteOrder();
@@ -265,12 +264,7 @@ export default function OrdersList() {
             </table>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5 py-3 bg-slate-50 border-t border-slate-200">
-            <p className="text-xs text-slate-400 order-last sm:order-first">
-              {isFetching
-                ? "Loading…"
-                : `Showing ${total === 0 ? 0 : (page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} of ${total} orders`}
-            </p>
+          <div className="flex justify-end px-5 py-3 bg-slate-50 border-t border-slate-200">
             <Pagination
               page={page}
               totalPages={totalPages}

@@ -1,6 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import Payment from "./pages/Payment";
 import Login from "./pages/Login";
 import Order from "./pages/Order";
 import OrderDetail from "./pages/OrderDetail";
@@ -31,7 +30,6 @@ function App() {
             <Route path="/table" element={<Table />} />
             <Route path="/order" element={<Order />} />
             <Route path="/order/:id" element={<OrderDetail />} />
-            <Route path="/payment" element={<Payment />} />
           </Route>
         </Route>
 
