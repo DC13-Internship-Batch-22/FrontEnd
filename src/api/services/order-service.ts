@@ -23,12 +23,12 @@ export const orderService = {
   },
 
   async deleteOrder(id: number) {
-    const response = await apiClient.delete(`/oders/${id}`);
+    const response = await apiClient.delete(`/orders/${id}`);
     return response.data;
   },
 
   async updateOrderItems(id: number, items: { productId: number; quantity: number }[]) {
-    const response = await apiClient.post(`/orders/${id}/items`, items);
+    const response = await apiClient.post(`/orders/${id}/override`, items);
     return response.data;
   },
 
