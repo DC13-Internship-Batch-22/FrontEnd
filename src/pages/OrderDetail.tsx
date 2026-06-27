@@ -4,6 +4,7 @@ import ItemRow from "@/components/order/ItemRow";
 import type { Food } from "@/types/food";
 import type { Order, OrderItem, OrderStatus } from "@/types/order";
 import { formatTime } from "@/utils/formatTime";
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, DollarSign, Loader2, Plus, SquarePen, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -14,8 +15,11 @@ const STATUS_CONFIG: Record<Order["orderStatus"], { label: string; color: string
 };
 
 export default function OrderDetail() {
+  const queryClient = useQueryClient();
+
   const { id } = useParams();
   const orderId = Number(id);
+
 
   const { data: order, isFetching: loading, error, isError } = useOrder(orderId);
   const { mutate: updateItems, isPending: saving } = useUpdateOrderItems(orderId);
@@ -77,8 +81,13 @@ export default function OrderDetail() {
   }
 
   const handleProceedToPayment = () => {
-    updateStatus('CONFIRMED');
-  }
+    updateStatus(undefined, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["orders"] });
+        queryClient.invalidateQueries({ queryKey: ["tables"] });
+      }
+    });
+  };
 
   const displayItems = editMode ? draftItems : (order?.items ?? []);
   const displayTotal = editMode
