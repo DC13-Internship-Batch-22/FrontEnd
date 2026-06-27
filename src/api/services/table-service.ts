@@ -3,9 +3,9 @@ import type {
   TablePageResponse,
   TableRequest,
   TableResponse,
-} from "../../types/table";
+} from "@/types/table";
 
-export const tablesService = {
+export const tableService = {
   async getTables(page = 0, size = 50) {
     const response = await apiClient.get<TablePageResponse>("/api/tables", {
       params: { page, size },
@@ -35,5 +35,3 @@ export const tablesService = {
     await apiClient.delete(`/api/tables/${id}`);
   },
 };
-
-export const getTables = tablesService.getTables;

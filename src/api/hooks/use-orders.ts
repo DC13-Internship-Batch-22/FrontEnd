@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { orderService } from "../services";
-import type { PagedOrderParams } from "@/types/order";
+import type { CreateOrderPayload, PagedOrderParams } from "@/types/order";
 
 export function useOrdersPaged(params: PagedOrderParams) {
   return useQuery({
@@ -15,6 +15,17 @@ export function useOrder(id: number) {
     queryKey: ['orders', id],
     queryFn: () => orderService.getOrderById(id),
     enabled: !!id,
+  });
+}
+
+export function useCreateOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateOrderPayload) =>
+      orderService.createOrder(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
   });
 }
 

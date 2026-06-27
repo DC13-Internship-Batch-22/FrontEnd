@@ -6,8 +6,8 @@ import OrderDetail from "./pages/OrderDetail";
 import Home from "./pages/Home";
 import Table from "./pages/Table";
 import Menu from "./pages/Menu";
+import Category from "./pages/Category";
 import MainLayout from "./pages/MainLayout";
-
 
 import "./index.css";
 import ProtectedRoute from "./pages/ProtectedRoute";
@@ -30,6 +30,7 @@ function App() {
             <Route path="/table" element={<Table />} />
             <Route path="/order" element={<Order />} />
             <Route path="/order/:id" element={<OrderDetail />} />
+            <Route path="/category" element={<Category />} />
           </Route>
         </Route>
 
