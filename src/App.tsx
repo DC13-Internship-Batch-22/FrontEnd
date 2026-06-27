@@ -12,6 +12,7 @@ import MainLayout from "./pages/MainLayout";
 
 import "./index.css";
 import ProtectedRoute from "./pages/ProtectedRoute";
+import MenuManagement from "./pages/MenuManagement";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/table/:id" element={<Menu />} />
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Home />} />
+            <Route path="/menu" element={<MenuManagement />} />
             <Route path="/table" element={<Table />} />
             <Route path="/order" element={<Order />} />
             <Route path="/order/:id" element={<OrderDetail />} />
