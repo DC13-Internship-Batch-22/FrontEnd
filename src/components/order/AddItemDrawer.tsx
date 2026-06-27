@@ -4,7 +4,7 @@ import { Search, X } from "lucide-react";
 import { useState } from "react";
 
 const AddItemDrawer = ({ existingIds, onAdd, onClose }: {
-  existingIds: Set<string>;
+  existingIds: Set<number>;
   onAdd: (food: Food, qty: number) => void;
   onClose: () => void;
 }) => {
@@ -96,7 +96,7 @@ const AddItemDrawer = ({ existingIds, onAdd, onClose }: {
               </div>
               <div className="divide-y divide-slate-100">
                 {items.map(food => {
-                  const alreadyIn = existingIds.has(String(food.id));
+                  const alreadyIn = existingIds.has(food.id);
                   const qty = quantities[food.id] ?? 1;
                   return (
                     <div

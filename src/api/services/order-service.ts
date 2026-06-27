@@ -1,8 +1,9 @@
+import type { PagedOrderParams } from "@/types/order";
 import apiClient from "../config/api-client"
 
 export const orderService = {
-  async getOrders() {
-    const response = await apiClient.get('/orders');
+  async getOrdersPaged(params: PagedOrderParams) {
+    const response = await apiClient.get('/orders', { params });
     return response.data;
   },
 
@@ -22,7 +23,17 @@ export const orderService = {
   },
 
   async deleteOrder(id: number) {
-    const response = await apiClient.delete(`/oders/${id}`);
+    const response = await apiClient.delete(`/orders/${id}`);
+    return response.data;
+  },
+
+  async updateOrderItems(id: number, items: { productId: number; quantity: number }[]) {
+    const response = await apiClient.post(`/orders/${id}/override`, items);
+    return response.data;
+  },
+
+  async updateOrderStatus(id: number, status: string) {
+    const response = await apiClient.post(`/orders/${id}/status`, status);
     return response.data;
   },
 };
