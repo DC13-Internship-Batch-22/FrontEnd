@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, message, Modal, Space } from 'antd';
-import { PlusOutlined, FilterOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import type { Food, DishPayload, Category } from '../types/food';
 import MenuTable from '../components/Menu/MenuTable';
 import DishModal from '../components/Menu/DishModal';
