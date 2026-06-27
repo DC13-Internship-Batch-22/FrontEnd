@@ -4,6 +4,7 @@ import { useState } from "react";
 import Header from "../components/Header";
 import { useCategories, useCreateOrder, useFoods } from "@/api/hooks";
 import { message } from "antd";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CartItem {
   id: number;
@@ -14,6 +15,8 @@ interface CartItem {
 }
 
 const Menu = () => {
+  const queryClient = useQueryClient();
+
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -67,6 +70,7 @@ const Menu = () => {
       {
         onSuccess: () => {
           message.success("Order placed!");
+          queryClient.invalidateQueries({ queryKey: ["tables"] });
           navigate("/table");
         },
         onError: () => {
