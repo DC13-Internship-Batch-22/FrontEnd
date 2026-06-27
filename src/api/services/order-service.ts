@@ -1,4 +1,4 @@
-import type { PagedOrderParams } from "@/types/order";
+import type { CreateOrderPayload, PagedOrderParams } from "@/types/order";
 import apiClient from "../config/api-client"
 
 export const orderService = {
@@ -12,7 +12,7 @@ export const orderService = {
     return response.data;
   },
 
-  async createOrder(body: any) {
+  async createOrder(body: CreateOrderPayload) {
     const response = await apiClient.post('/orders', body);
     return response.data
   },

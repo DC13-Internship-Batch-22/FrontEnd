@@ -9,20 +9,9 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { type FormEvent, useEffect, useState } from "react";
-import { tablesService } from "../api/services/tables-service";
-import type {
-  TableRequest,
-  TableResponse,
-  TableStatus,
-} from "../types/table";
-
-const tableStatusOptions: TableStatus[] = [
-  "AVAILABLE",
-  "OCCUPIED",
-  "RESERVED",
-  "MAINTENANCE",
-];
+import { useState } from "react";
+import type { TableRequest, TableResponse, TableStatus } from "../types/table";
+import { useCreateTable, useDeleteTable, useGetTables, useUpdateTable } from "@/api/hooks";
 
 const emptyForm: TableRequest = {
   tableNumber: "",
@@ -33,40 +22,25 @@ const emptyForm: TableRequest = {
 const Table = () => {
   const navigate = useNavigate();
 
-  const [tables, setTables] = useState<TableResponse[]>([]);
-  const [totalTables, setTotalTables] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState("");
   const [form, setForm] = useState<TableRequest>(emptyForm);
   const [editingTable, setEditingTable] = useState<TableResponse | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  useEffect(() => {
-    loadTables();
-  }, []);
+  const { data, isLoading } = useGetTables();
+  const createTable = useCreateTable();
+  const updateTable = useUpdateTable();
+  const deleteTable = useDeleteTable();
 
-  const loadTables = async () => {
-    setIsLoading(true);
-    setError("");
+  const tables = data?.content ?? [];
+  const totalTables = data?.totalElements ?? 0;
 
-    try {
-      const data = await tablesService.getTables();
-
-      setTables(data.content ?? []);
-      setTotalTables(data.totalElements);
-    } catch (error) {
-      console.error("Failed to load tables:", error);
-      setError("Unable to load tables. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const occupiedTables = tables.filter((t) => t.status === "OCCUPIED").length;
+  const availableTables = tables.filter((t) => t.status === "AVAILABLE").length;
+  const reservedTables = tables.filter((t) => t.status === "RESERVED").length;
 
   const openCreateForm = () => {
     setForm(emptyForm);
     setEditingTable(null);
-    setError("");
     setIsFormOpen(true);
   };
 
@@ -77,7 +51,6 @@ const Table = () => {
       status: table.status,
     });
     setEditingTable(table);
-    setError("");
     setIsFormOpen(true);
   };
 
@@ -87,95 +60,65 @@ const Table = () => {
     setForm(emptyForm);
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsSaving(true);
-    setError("");
 
-    try {
-      const payload = {
-        ...form,
-        tableNumber: form.tableNumber.trim(),
-        capacity: Number(form.capacity),
-      };
+    const payload: TableRequest = {
+      ...form,
+      tableNumber: form.tableNumber.trim(),
+      capacity: Number(form.capacity),
+    };
 
-      if (editingTable) {
-        await tablesService.updateTable(editingTable.id, payload);
-      } else {
-        await tablesService.createTable(payload);
-      }
-
-      closeForm();
-      await loadTables();
-    } catch (error) {
-      console.error("Failed to save table:", error);
-      setError("Unable to save table. Please check the details and try again.");
-    } finally {
-      setIsSaving(false);
+    if (editingTable) {
+      updateTable.mutate(
+        { id: editingTable.id, payload },
+        { onSuccess: closeForm }
+      );
+    } else {
+      createTable.mutate(payload, { onSuccess: closeForm });
     }
   };
 
-  const handleDelete = async (table: TableResponse) => {
+  const handleDelete = (table: TableResponse) => {
     const confirmed = window.confirm(
       `Delete table #${table.tableNumber}? This action cannot be undone.`
     );
-
-    if (!confirmed) {
-      return;
-    }
-
-    setError("");
-
-    try {
-      await tablesService.deleteTable(table.id);
-      await loadTables();
-    } catch (error) {
-      console.error("Failed to delete table:", error);
-      setError("Unable to delete table. Please try again.");
-    }
+    if (!confirmed) return;
+    deleteTable.mutate(table.id);
   };
 
-  const occupiedTables = tables.filter(
-    (table) => table.status === "OCCUPIED"
-  ).length;
-
-  const availableTables = tables.filter(
-    (table) => table.status === "AVAILABLE"
-  ).length;
-
-  const reservedTables = tables.filter(
-    (table) => table.status === "RESERVED"
-  ).length;
+  const handleTableAction = (table: TableResponse) => {
+  if (table.status === "AVAILABLE") {
+    navigate(`/table/${table.id}`);
+  } else if (table.status === "OCCUPIED") {
+    navigate(`/order/${table.orderId}`);
+  }
+};
 
   const getStatusClass = (status: TableStatus) => {
     switch (status) {
-      case "AVAILABLE":
-        return "bg-green-100 text-green-700";
-      case "OCCUPIED":
-        return "bg-amber-100 text-amber-700";
-      case "RESERVED":
-        return "bg-blue-100 text-blue-700";
-      case "MAINTENANCE":
-        return "bg-rose-100 text-rose-700";
-      default:
-        return "bg-gray-100 text-gray-700";
+      case "AVAILABLE":   return "bg-green-100 text-green-700";
+      case "OCCUPIED":    return "bg-amber-100 text-amber-700";
+      case "RESERVED":    return "bg-blue-100 text-blue-700";
+      case "MAINTENANCE": return "bg-rose-100 text-rose-700";
+      default:            return "bg-gray-100 text-gray-700";
     }
   };
 
   const getStatusBorderClass = (status: TableStatus) => {
     switch (status) {
-      case "AVAILABLE":
-        return "border-t-green-500";
-      case "OCCUPIED":
-        return "border-t-amber-500";
-      case "RESERVED":
-        return "border-t-blue-500";
-      case "MAINTENANCE":
-        return "border-t-rose-500";
-      default:
-        return "border-t-gray-400";
+      case "AVAILABLE":   return "border-t-green-500";
+      case "OCCUPIED":    return "border-t-amber-500";
+      case "RESERVED":    return "border-t-blue-500";
+      case "MAINTENANCE": return "border-t-rose-500";
+      default:            return "border-t-gray-400";
     }
   };
+
+  const mutationError =
+    createTable.error || updateTable.error || deleteTable.error;
+
+  const isSaving = createTable.isPending || updateTable.isPending;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -197,104 +140,60 @@ const Table = () => {
           </button>
         </div>
 
-        {error && (
+        {mutationError && (
           <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
+            Unable to complete the action. Please try again.
           </div>
         )}
 
-        {/* Stats */}
         <div className="grid grid-cols-4 gap-5">
           <div className="bg-white border rounded-lg p-5 flex justify-between">
             <div>
-              <p className="text-sm text-gray-500">
-                Total Tables
-              </p>
-              <h2 className="text-3xl font-bold mt-4">
-                {totalTables}
-              </h2>
-              <p className="text-gray-400 text-sm">
-                Full Capacity
-              </p>
+              <p className="text-sm text-gray-500">Total Tables</p>
+              <h2 className="text-3xl font-bold mt-4">{totalTables}</h2>
+              <p className="text-gray-400 text-sm">Full Capacity</p>
             </div>
-
             <div className="w-10 h-10 bg-blue-100 rounded flex items-center justify-center">
-              <Armchair
-                className="text-blue-600"
-                size={20}
-              />
+              <Armchair className="text-blue-600" size={20} />
             </div>
           </div>
 
           <div className="bg-white border rounded-lg p-5 flex justify-between">
             <div>
-              <p className="text-sm text-gray-500">
-                Available
-              </p>
-              <h2 className="text-3xl font-bold mt-4">
-                {availableTables}
-              </h2>
-              <p className="text-green-500 text-sm">
-                Ready for seating
-              </p>
+              <p className="text-sm text-gray-500">Available</p>
+              <h2 className="text-3xl font-bold mt-4">{availableTables}</h2>
+              <p className="text-green-500 text-sm">Ready for seating</p>
             </div>
-
             <div className="w-10 h-10 bg-green-100 rounded flex items-center justify-center">
-              <CircleCheck
-                className="text-green-600"
-                size={20}
-              />
+              <CircleCheck className="text-green-600" size={20} />
             </div>
           </div>
 
           <div className="bg-white border rounded-lg p-5 flex justify-between">
             <div>
-              <p className="text-sm text-gray-500">
-                Occupied
-              </p>
-              <h2 className="text-3xl font-bold mt-4">
-                {occupiedTables}
-              </h2>
-              <p className="text-amber-500 text-sm">
-                Active service
-              </p>
+              <p className="text-sm text-gray-500">Occupied</p>
+              <h2 className="text-3xl font-bold mt-4">{occupiedTables}</h2>
+              <p className="text-amber-500 text-sm">Active service</p>
             </div>
-
             <div className="w-10 h-10 bg-amber-100 rounded flex items-center justify-center">
-              <Users
-                className="text-amber-600"
-                size={20}
-              />
+              <Users className="text-amber-600" size={20} />
             </div>
           </div>
 
           <div className="bg-white border rounded-lg p-5 flex justify-between">
             <div>
-              <p className="text-sm text-gray-500">
-                Reserved
-              </p>
-              <h2 className="text-3xl font-bold mt-4">
-                {reservedTables}
-              </h2>
-              <p className="text-blue-500 text-sm">
-                Upcoming guests
-              </p>
+              <p className="text-sm text-gray-500">Reserved</p>
+              <h2 className="text-3xl font-bold mt-4">{reservedTables}</h2>
+              <p className="text-blue-500 text-sm">Upcoming guests</p>
             </div>
-
             <div className="w-10 h-10 bg-blue-100 rounded flex items-center justify-center">
-              <Clock3
-                className="text-blue-600"
-                size={20}
-              />
+              <Clock3 className="text-blue-600" size={20} />
             </div>
           </div>
         </div>
 
-        {/* Floor Overview */}
         <div className="mt-8">
-          <h2 className="text-3xl font-bold mb-5">
-            Floor Overview
-          </h2>
+          <h2 className="text-3xl font-bold mb-5">Floor Overview</h2>
 
           <div className="grid grid-cols-5 gap-4">
             {isLoading ? (
@@ -309,20 +208,11 @@ const Table = () => {
               tables.map((table) => (
                 <div
                   key={table.id}
-                  className={`group relative bg-white border rounded-lg p-4 border-t-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-[3px] ${getStatusBorderClass(
-                    table.status
-                  )}`}
+                  className={`group relative bg-white border rounded-lg p-4 border-t-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-[3px] ${getStatusBorderClass(table.status)}`}
                 >
                   <div className="flex justify-between items-start gap-3">
-                    <h3 className="font-bold text-lg">
-                      #{table.tableNumber}
-                    </h3>
-
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${getStatusClass(
-                        table.status
-                      )}`}
-                    >
+                    <h3 className="font-bold text-lg">#{table.tableNumber}</h3>
+                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusClass(table.status)}`}>
                       {table.status}
                     </span>
                   </div>
@@ -332,7 +222,6 @@ const Table = () => {
                       <Users size={14} />
                       Cap. {table.capacity}
                     </p>
-
                     <p className="mt-2 flex items-center gap-1">
                       <Clock3 size={14} />
                       {table.status === "AVAILABLE"
@@ -347,16 +236,12 @@ const Table = () => {
 
                   <div className="mt-4 pt-3 flex items-center justify-between gap-2 border-t border-gray-200 font-medium">
                     <button
-                      onClick={() => navigate(`/table/${table.id}`)}
+                      onClick={() => handleTableAction(table)}
                       className={`text-left text-sm cursor-pointer ${
-                        table.status === "AVAILABLE"
-                          ? "text-blue-600"
-                          : "text-amber-600"
+                        table.status === "AVAILABLE" ? "text-blue-600" : "text-amber-600"
                       }`}
                     >
-                      {table.status === "AVAILABLE"
-                        ? "New Order"
-                        : "View Bill"}
+                      {table.status === "AVAILABLE" ? "New Order" : "View Bill"}
                     </button>
 
                     <div className="flex items-center gap-1">
@@ -371,7 +256,8 @@ const Table = () => {
                       <button
                         type="button"
                         onClick={() => handleDelete(table)}
-                        className="rounded p-2 text-gray-500 hover:bg-red-50 hover:text-red-700 cursor-pointer"
+                        disabled={deleteTable.isPending}
+                        className="rounded p-2 text-gray-500 hover:bg-red-50 hover:text-red-700 cursor-pointer disabled:opacity-50"
                         title="Delete table"
                       >
                         <Trash2 size={16} />
@@ -404,22 +290,14 @@ const Table = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4 p-5">
               <div>
-                <label
-                  htmlFor="tableNumber"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="tableNumber" className="mb-1 block text-sm font-medium text-gray-700">
                   Table Number
                 </label>
                 <input
                   id="tableNumber"
                   type="text"
                   value={form.tableNumber}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      tableNumber: event.target.value,
-                    }))
-                  }
+                  onChange={(e) => setForm((curr) => ({ ...curr, tableNumber: e.target.value }))}
                   maxLength={10}
                   required
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -427,10 +305,7 @@ const Table = () => {
               </div>
 
               <div>
-                <label
-                  htmlFor="capacity"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="capacity" className="mb-1 block text-sm font-medium text-gray-700">
                   Capacity
                 </label>
                 <input
@@ -438,41 +313,10 @@ const Table = () => {
                   type="number"
                   min={1}
                   value={form.capacity}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      capacity: Number(event.target.value),
-                    }))
-                  }
+                  onChange={(e) => setForm((curr) => ({ ...curr, capacity: Number(e.target.value) }))}
                   required
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="status"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Status
-                </label>
-                <select
-                  id="status"
-                  value={form.status}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      status: event.target.value as TableStatus,
-                    }))
-                  }
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                >
-                  {tableStatusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
               </div>
 
               <div className="flex justify-end gap-3 pt-2">

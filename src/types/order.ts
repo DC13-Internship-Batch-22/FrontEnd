@@ -38,3 +38,13 @@ export interface OrderItem {
   quantity: number
   price: number
 }
+
+export interface OrderItemInput {
+  productId: number;
+  quantity: number;
+}
+
+export interface CreateOrderPayload {
+  table_id: number,
+  items: OrderItemInput[],
+}

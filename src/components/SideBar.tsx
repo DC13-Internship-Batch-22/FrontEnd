@@ -1,4 +1,4 @@
-import { HandPlatter, LayoutDashboard, LogOut, NotebookText, Settings, Soup } from 'lucide-react';
+import { HandPlatter, LayoutDashboard, LayoutGrid, LogOut, NotebookText, Settings, Soup } from 'lucide-react';
 import logoSidebar from '../assets/logo_sidebar.png';
 import { NavLink } from 'react-router-dom';
 import { useLogout } from '@/api/hooks';
@@ -41,7 +41,13 @@ const SideBar = () => {
       path: '/menu',
       icon: <Soup className='w-6 h-6' />,
       label: 'Menu'
-    }
+    },
+    {
+      key: 'category',
+      path: '/category',
+      icon: <LayoutGrid className='w-6 h-6' />,
+      label: 'Category',
+    },
   ];
 
   const bottomItems: NavItem[] = [

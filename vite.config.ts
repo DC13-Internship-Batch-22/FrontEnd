@@ -13,5 +13,33 @@ export default defineConfig({
   },
   server: {
     open: true,
-  }
+  },
+  build: {
+    chunkSizeWarningLimit: 700,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          minSize: 20000,
+          groups: [
+            {
+              name: 'antd-icons',
+              test: /@ant-design\/icons/,
+            },
+            {
+              name: 'antd-core',
+              test: /node_modules\/antd\/(es|lib)\/(button|input|form|modal|table|select|dropdown)/,
+            },
+            {
+              name: 'chart-vendor',
+              test: /node_modules\/recharts/,
+            },
+            {
+              name: 'vendor',
+              test: /node_modules/,
+            },
+          ],
+        },
+      },
+    },
+  },
 })
