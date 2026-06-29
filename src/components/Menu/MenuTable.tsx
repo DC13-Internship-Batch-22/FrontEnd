@@ -5,11 +5,12 @@ import type { Food } from '../../types/food';
 
 interface MenuTableProps {
   data: Food[];
+  loading: boolean;
   onEdit: (item: Food) => void;
   onDelete: (item: Food) => void;
 }
 
-const MenuTable: React.FC<MenuTableProps> = ({ data, onEdit, onDelete }) => {
+const MenuTable: React.FC<MenuTableProps> = ({ data, loading, onEdit, onDelete }) => {
   const columns = [
     {
       title: 'ITEM',
@@ -59,7 +60,7 @@ const MenuTable: React.FC<MenuTableProps> = ({ data, onEdit, onDelete }) => {
     },
   ];
 
-  return <Table columns={columns} dataSource={data} rowKey="id" pagination={{ pageSize: 5 }} />;
+  return <Table columns={columns} dataSource={data} rowKey="id" loading={loading} pagination={{ pageSize: 5 }} />;
 };
 
 export default MenuTable;

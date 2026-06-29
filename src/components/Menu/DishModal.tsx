@@ -1,22 +1,26 @@
-import React, { useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, Select } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Modal, Form, Input, InputNumber, Select, Button, Upload } from 'antd';
 import type { DishPayload, Food, Category } from '../../types/food';
+import { UploadOutlined } from '@ant-design/icons';
 
 interface DishModalProps {
   open: boolean;
   mode: 'add' | 'edit';
   initialData: Food | null;
   categories: Category[];
+  confirmLoading: boolean;
   onCancel: () => void;
   onSave: (values: DishPayload) => void;
 }
 
-const DishModal: React.FC<DishModalProps> = ({ open, mode, initialData, categories, onCancel, onSave }) => {
+const DishModal: React.FC<DishModalProps> = ({ open, mode, initialData, categories, confirmLoading, onCancel, onSave }) => {
   const [form] = Form.useForm();
+  const [uploadType, setUploadType] = useState<'url' | 'file'>('file'); // Quản lý lựa chọn hình thức nhập ảnh
 
   useEffect(() => {
     if (open) {
       if (mode === 'edit' && initialData) {
+        setUploadType('url'); // Khi edit thường hiển thị dạng URL ảnh có sẵn
         form.setFieldsValue({
           name: initialData.name,
           price: initialData.price,
@@ -26,14 +30,19 @@ const DishModal: React.FC<DishModalProps> = ({ open, mode, initialData, categori
         });
       } else {
         form.resetFields();
+        setUploadType('file'); // Khi add mặc định chọn chọn file từ máy
         form.setFieldsValue({ status: 'AVAILABLE' });
       }
     }
   }, [open, mode, initialData, form]);
 
   const handleSubmit = () => {
-    form.validateFields().then((values) => {
-      onSave({ ...values, status: values.status || 'AVAILABLE' });
+    form.validateFields().then((values: any) => {
+      // Nếu chọn hình thức upload file, bóc tách lấy file thực tế từ cấu trúc dữ liệu của Antd Upload
+      if (uploadType === 'file' && values.imageUrl?.file) {
+        values.imageUrl = values.imageUrl.file; // Gán lại thành đối tượng File thuần túy
+      }
+      onSave(values);
     });
   };
 
@@ -43,6 +52,7 @@ const DishModal: React.FC<DishModalProps> = ({ open, mode, initialData, categori
       open={open}
       onOk={handleSubmit}
       onCancel={onCancel}
+      confirmLoading={confirmLoading} // Tích hợp hiệu ứng loading cho nút bấm chính của Modal
       okText={mode === 'add' ? 'Add Dish' : 'Save Changes'}
       cancelText="Cancel"
       okButtonProps={{ className: 'bg-blue-600' }}
@@ -81,13 +91,39 @@ const DishModal: React.FC<DishModalProps> = ({ open, mode, initialData, categori
           </Form.Item>
         </div>
 
-        <Form.Item
-          name="imageUrl"
-          label={<span className="font-semibold">Image URL</span>}
-          rules={[{ required: true, message: 'Please enter image URL!' }]}
-        >
-          <Input placeholder="https://..." className="rounded-lg" />
-        </Form.Item>
+        <div className="mb-2 flex gap-4">
+          <span className="font-semibold text-gray-600">Hình thức ảnh:</span>
+          <label className="cursor-pointer flex items-center gap-1">
+            <input type="radio" checked={uploadType === 'file'} onChange={() => setUploadType('file')} /> Upload File
+          </label>
+          <label className="cursor-pointer flex items-center gap-1">
+            <input type="radio" checked={uploadType === 'url'} onChange={() => setUploadType('url')} /> Nhập URL Text
+          </label>
+        </div>
+
+        {uploadType === 'url' ? (
+          <Form.Item
+            name="imageUrl"
+            label={<span className="font-semibold">URL Hình ảnh</span>}
+            rules={[{ required: true, message: 'Vui lòng nhập URL ảnh!' }]}
+          >
+            <Input placeholder="https://..." className="rounded-lg" />
+          </Form.Item>
+        ) : (
+          <Form.Item
+            name="imageUrl"
+            label={<span className="font-semibold">Chọn file ảnh từ máy tính</span>}
+            rules={[{ required: true, message: 'Vui lòng tải lên một file ảnh!' }]}
+          >
+            <Upload 
+              maxCount={1} 
+              listType="picture"
+              beforeUpload={() => false} // Ngăn Antd tự động gửi request upload riêng lên server
+            >
+              <Button icon={<UploadOutlined />}>Bấm để chọn file ảnh</Button>
+            </Upload>
+          </Form.Item>
+        )}
 
         <Form.Item name="status" label={<span className="font-semibold">Status</span>}>
           <Select className="w-full" disabled>
