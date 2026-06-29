@@ -1,4 +1,4 @@
-import type { DishPayload, Food } from "@/types/food";
+import type { Food } from "@/types/food";
 import apiClient from "../config/api-client"
 
 export const foodService = {
