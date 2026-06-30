@@ -1,4 +1,4 @@
-import { HandPlatter, LayoutDashboard, LayoutGrid, LogOut, NotebookText, Settings, Soup } from 'lucide-react';
+import { HandPlatter, LayoutDashboard, LayoutGrid, LogOut, NotebookText, Soup } from 'lucide-react';
 import logoSidebar from '../assets/logo_sidebar.png';
 import { NavLink } from 'react-router-dom';
 import { useLogout } from '@/api/hooks';
@@ -50,15 +50,6 @@ const SideBar = () => {
     },
   ];
 
-  const bottomItems: NavItem[] = [
-    {
-      key: 'settings',
-      path: '/option',
-      icon: <Settings className='w-6 h-6' />,
-      label: 'Settings'
-    }
-  ];
-
   const renderNavItem = (item: NavItem) => (
     <NavLink
       key={item.key}
@@ -94,7 +85,6 @@ const SideBar = () => {
         </div>
 
         <div className='flex flex-col w-full gap-1 justify-center mt-3 border-t border-gray-200'>
-          {bottomItems.map(renderNavItem)}
           <div
             onClick={handleLogout}
             className='flex gap-5 text-gray-800 justify-start items-center p-5 hover:bg-red-50 hover:text-red-600 transition-all duration-300 cursor-pointer'
