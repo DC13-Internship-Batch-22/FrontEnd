@@ -10,8 +10,8 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 const STATUS_CONFIG: Record<Order["orderStatus"], { label: string; color: string; bg: string }> = {
-  PENDING: { label: "Pending", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
-  CONFIRMED: { label: "Completed", color: "text-slate-700", bg: "bg-slate-50 border-slate-200" },
+  PENDING: { label: "PENDING", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
+  CONFIRMED: { label: "COMFIRMED", color: "text-slate-700", bg: "bg-slate-50 border-slate-200" },
 };
 
 export default function OrderDetail() {

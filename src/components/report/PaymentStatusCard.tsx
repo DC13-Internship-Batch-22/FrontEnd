@@ -9,10 +9,8 @@ type PaymentStatusCardProps = {
 };
 
 const statusStyles: Record<string, string> = {
-  COMPLETED: "bg-emerald-600 text-emerald-700",
   CONFIRMED: "bg-blue-600 text-blue-700",
   PENDING: "bg-amber-600 text-amber-700",
-  CANCELLED: "bg-red-600 text-red-700",
 };
 
 const PaymentStatusCard = ({
