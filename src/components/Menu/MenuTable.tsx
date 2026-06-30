@@ -40,15 +40,6 @@ const MenuTable: React.FC<MenuTableProps> = ({ data, loading, onEdit, onDelete }
       render: (price: number) => <span className="font-medium">${price.toFixed(2)}</span>,
     },
     {
-      title: 'STATUS',
-      dataIndex: 'status',
-      render: (status: string) => (
-        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-600">
-          ● {status}
-        </span>
-      ),
-    },
-    {
       title: 'ACTIONS',
       key: 'actions',
       render: (record: Food) => (

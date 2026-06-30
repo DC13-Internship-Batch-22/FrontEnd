@@ -1,4 +1,4 @@
-export type FoodStatus = 'AVAILABLE';
+export type FoodStatus = 'AVAILABLE' | 'UNAVAILABLE';
 
 export interface Food {
   id: number;
